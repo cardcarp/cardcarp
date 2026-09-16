@@ -1,0 +1,37 @@
+{
+    "name": "@cardcarp/home",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": "^20.19.0 || >=22.12.0"
+    },
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "npm run build && wrangler deploy"
+    },
+    "dependencies": {
+        "@cardcarp/core": "*",
+        "@tailwindcss/vite": "^4.3.3",
+        "@vueuse/core": "^14.4.0",
+        "@vueuse/integrations": "^14.4.0",
+        "@vueuse/math": "^14.4.0",
+        "embla-carousel-vue": "^8.6.0",
+        "motion-v": "^2.4.0",
+        "reka-ui": "^2.10.4",
+        "tailwindcss": "^4.3.3",
+        "vue": "^3.5.41",
+        "vue-router": "^5.2.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/typography": "^0.5.20",
+        "@vitejs/plugin-vue": "^6.0.8",
+        "highlight.js": "^11.12.0",
+        "pug": "^3.0.4",
+        "vite": "^8.2.2",
+        "wrangler": "^4.15.2"
+    },
+    "description": "cardcarp.com — the documentation site: a docs tree per package, and the projects built on them."
+}

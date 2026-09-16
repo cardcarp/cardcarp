@@ -1,0 +1,41 @@
+{
+    "group": {
+        "list": [
+            "hero",
+            "main",
+            "side",
+            "draft"
+        ],
+        "default": [
+            "hero",
+            "main"
+        ]
+    },
+    "table": [
+        {
+            "key": "name",
+            "label": "Name",
+            "type": "text",
+            "format": "bold"
+        },
+        {
+            "key": "card_total",
+            "label": "Cards",
+            "type": "number",
+            "format": "number"
+        },
+        {
+            "key": "highlight",
+            "label": "About",
+            "type": "array",
+            "format": "card",
+            "sort": false
+        }
+    ],
+    "sort": {
+        "name": {
+            "label": "Name"
+        }
+    },
+    "filter": {}
+}

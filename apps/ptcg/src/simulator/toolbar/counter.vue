@@ -1,0 +1,125 @@
+<script setup>
+import { computed, ref } from 'vue'
+import { AnimatePresence, Motion } from 'motion-v'
+import {
+    PopoverContent,
+    PopoverPortal,
+    PopoverRoot,
+    PopoverTrigger,
+
+    TooltipContent,
+    TooltipPortal,
+    TooltipRoot,
+    TooltipTrigger,
+} from 'reka-ui'
+
+import { useStore } from '../composable/use-store.js'
+
+import ToolDelete from './shared/tool-delete.vue'
+import { useTable } from '../use-table.js'
+
+// The table, through its object (see use-table.js).
+const { current: uiSelection } = useTable().selection
+const { increment: counterIncrement, decrement: counterDecrement, changeVariant: counterChangeVariant } = useTable().counters
+
+const ui_selection = useStore(uiSelection)
+
+// Same contract as the dice toolbar's colour chip: the accessory declares its variants in the
+// manifest, addCounter stashes them on the node, and the selection payload carries both the
+// list and which one is showing. Absent or single-entry `variant` means there is nothing to
+// choose between, so the control hides itself rather than offering a picker with one option —
+// which is the case for a plain life counter.
+const popoverVariant = ref(false)
+
+const variants = computed(() => ui_selection.value?.data?.variants ?? [])
+const activeVariant = computed(() => ui_selection.value?.data?.variant ?? null)
+
+// The number itself, shown between the two steppers. A die's face is legible on the table at
+// any zoom because it is one glyph; a life total at 40 is worth reading off the toolbar you
+// are already clicking, and it is the only confirmation that a click landed once the value
+// is against its min or max and stops moving.
+const value = computed(() => ui_selection.value?.data?.value ?? 0)
+
+function pick_variant(variant) {
+    counterChangeVariant(variant)
+    popoverVariant.value = false
+}
+
+</script>
+
+<template lang="pug">
+AnimatePresence
+    Motion(
+        v-if="ui_selection.type === 'counter'"
+        key="toolbar-counter"
+        :initial="{ opacity: 0, y: 0 }"
+        :animate="{ opacity: 1, y: -10 }"
+        :exit="{ opacity: 0, y: 0 }"
+        class="absolute p-2 flex gap-1 bg-neutral-950 border border-white/5 rounded-xl z-50 -translate-x-1/2 -translate-y-full"
+        :style="{ left: `${ui_selection.x}px`, top: `${ui_selection.y}px` }"
+    )
+
+        .tool-decrement(
+            @click="counterDecrement()"
+            class="size-8 flex items-center justify-center hover:bg-neutral-900 rounded-lg"
+        )
+            svg(class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+                <path d="M5 12h14"/>
+
+        .tool-value(class="min-w-8 px-1 flex items-center justify-center text-3.5 font-mono tabular-nums leading-none select-none") {{ value }}
+
+        .tool-increment(
+            @click="counterIncrement()"
+            class="size-8 flex items-center justify-center hover:bg-neutral-900 rounded-lg"
+        )
+            svg(class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
+                <path d="M5 12h14"/>
+                <path d="M12 5v14"/>
+
+        //- Colour swap. Sits with the value controls because it is a property of this counter,
+        //- not of the table — and it is broadcast as a nodes:patch, so peers recolour too.
+        PopoverRoot(v-if="variants.length > 1" :modal="false" v-model:open="popoverVariant")
+            PopoverTrigger
+                TooltipRoot(:delayDuration="100" :disable-closing-trigger="false")
+                    TooltipTrigger
+                        .tool-variant(
+                            class="size-8 flex items-center justify-center hover:bg-neutral-900 rounded-lg"
+                            :class="{'bg-white!' : popoverVariant}"
+                        )
+                            .chip(
+                                class="size-5 rounded-full outline outline-white/20"
+                                :style="{ backgroundColor: activeVariant?.color }"
+                            )
+                    TooltipPortal
+                        AnimatePresence
+                            TooltipContent(asChild align="center" side="top" :sideOffset="4")
+                                Motion(:initial="{ opacity: 0, scale: 0 }" :animate="{ opacity: 1, scale: 1 }" :exit="{ opacity: 0, scale: 0.6 }" class="px-3 py-1.5 text-3 text-white bg-black leading-none rounded-full backdrop-blur-sm pointer-events-none z-99")
+                                    span Counter Color
+
+            PopoverPortal
+                AnimatePresence
+                    PopoverContent(
+                        asChild 
+                        align="center" 
+                        side="bottom" 
+                        :sideOffset="12"
+                        :collisionPadding="12"
+                    )
+                        Motion(
+                            :initial="{ opacity: 0, scale: 0 }"
+                            :animate="{ opacity: 1, scale: 1 }"
+                            :exit="{ opacity: 0, scale: 0.6 }"
+                            class="p-2 flex gap-1 bg-black border border-white/15 rounded-xl z-99"
+                        )
+                            .btn(
+                                v-for="variant in variants"
+                                :key="variant.name"
+                                @click="pick_variant(variant)"
+                                class="size-6 rounded-full outline outline-white/5"
+                                :class="{'outline-white/60!' : variant.name === activeVariant?.name}"
+                                :style="{ backgroundColor: variant.color }"
+                                :title="variant.name"
+                            )
+
+        ToolDelete
+</template>

@@ -1,0 +1,2 @@
+# Local development secret for signing room tickets
+ROOM_TICKET_SECRET=local-dev-only-not-a-real-secret

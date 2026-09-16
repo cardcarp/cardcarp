@@ -1,0 +1,53 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+    // Worker script names are unique per Cloudflare account, not per project — there is no
+    // "app" grouping them — so this must differ from the frontend Worker's name or the two
+    // deploys overwrite each other. Also sets the hostname: cardcarp-relay.<sub>.workers.dev,
+    // which is what VITE_MULTIPLAYER_WS_URL and the frontend CSP's connect-src must match.
+    "name": "cardcarp-relay",
+    "main": "src/index.js",
+    "compatibility_date": "2025-01-01",
+
+    // PartyServer's routePartykitRequest looks up the DO binding by class name.
+    // The binding name must match the exported class in src/room.js exactly.
+    "durable_objects": {
+        "bindings": [
+            { "name": "Room", "class_name": "Room" }
+        ]
+    },
+
+    // SQLite-backed DO storage. Room canvas state is write-through persisted here
+    // (`node:<id>` per node plus `seq`), so a hibernation wake rebuilds the exact table.
+    // The idle sweep's deleteAll drops a room's rows once it empties out.
+    "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["Room"] }
+    ],
+
+    // Per-IP cost guards, enforced in the stateless Worker before any DO is instantiated.
+    // Every distinct room code is a distinct Durable Object, and DO duration is the
+    // dominant cost, so uncapped room fan-out from a single host is the cheapest way for
+    // someone to run up the bill. Both fail open if the binding is missing.
+    //
+    // Sizing: a player needs one mint plus one upgrade to join, and vueuse retries a
+    // dropped socket up to 5 times. 60/min is therefore very loose for a human and very
+    // tight for a bot. The tradeoff is shared egress IPs — a large NAT'd group all joining
+    // at once shares one bucket. Raise ROOM_LIMITER if that ever bites; it is far more
+    // likely to be the thing you need to tune than anything else here.
+    "ratelimits": [
+        {
+            "name": "ROOM_LIMITER",
+            "namespace_id": "1001",
+            "simple": { "limit": 60, "period": 60 }
+        },
+        {
+            "name": "TICKET_LIMITER",
+            "namespace_id": "1002",
+            "simple": { "limit": 120, "period": 60 }
+        }
+    ],
+
+    // Needed to actually see abuse happening — without it there is no signal until a bill.
+    "observability": {
+        "enabled": true
+    }
+}

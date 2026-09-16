@@ -1,0 +1,403 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Where the utilities come from.
+ *
+ * Tailwind v4 finds its own sources by walking up from this file — and deliberately skips
+ * node_modules, which is where a workspace package lives once it is symlinked in. Without an
+ * explicit @source a package's classes vanish from the built stylesheet: the build still
+ * succeeds, the dev server still looks right, and production ships unstyled. Nothing warns
+ * about it; the CSS is simply smaller.
+ *
+ * This site mounts no packages any more — the deckbox and the simulator are their own projects
+ * under apps/, and what this site carries about them is documentation. It renders no core
+ * COMPONENT either since the set tree went, so this line currently scans a package whose
+ * classes nothing here uses. Kept as the guard it is: the moment a core component comes back
+ * — core still lends the profile store and a dialog shell — its absence is the silent kind of
+ * breakage described above, and noticing that in production is expensive.
+ */
+
+@font-face {
+    font-family: "Google Sans Flex";
+    src: url("https://storage.cardcarp.com/site/font/googlesansflex.woff2") format("woff2");
+    font-weight: 1 1000;
+    font-stretch: 25% 151%;
+    font-style: oblique 0deg 10deg;
+    font-optical-sizing: auto;
+}
+
+@font-face {
+    font-family: "Google Sans Code";
+    src: url("https://storage.cardcarp.com/site/font/googlesanscode.woff2") format("woff2");
+    font-weight: 300 800;
+    font-style: normal;
+}
+
+@theme {
+    --font-sans: "Google Sans Flex", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Google Sans Code', ui-monospace, monospace;
+    --color-text: var(--color-neutral-400);
+    --color-brand-green: hsl(73 99 62 / 1);
+    --color-brand-blue: hsl(183 99 62 / 1);
+    --color-brand-tert: hsl(43 99 62 / 1);
+    --color-charcoal: hsl(0 0 20 / 1);
+    --color-coal: hsl(234 12 11);
+    
+    /* Sandstone Grey Green color palette */
+    --color-swamp-50: oklch(96.37% 0.0014 167.38);
+    --color-swamp-100: oklch(93.01% 0.0036 165.543);
+    --color-swamp-200: oklch(87.79% 0.0064 166.202);
+    --color-swamp-300: oklch(80.83% 0.0099 166.699);
+    --color-swamp-400: oklch(71.55% 0.0124 165.646);
+    --color-swamp-500: oklch(63.54% 0.012 165.2);
+    --color-swamp-600: oklch(51.94% 0.0102 165.647);
+    --color-swamp-700: oklch(41.73% 0.0082 167.079);
+    --color-swamp-800: oklch(32.92% 0.0065 167.86);
+    --color-swamp-900: oklch(26.65% 0.0053 169.076);
+    --color-swamp-950: oklch(13.19% 0.0034 171.243);
+    
+    --color-swamp-harmony-1: oklch(46.76% 0.0114 316.515);
+    --color-swamp-harmony-2: oklch(46.63% 0.0109 250.632);
+    
+    /* base step: 4px = .25rem */
+    --font-step: 0.25rem;
+    
+    /* auto-generated tokens */
+    --text-1: calc(var(--font-step) * 1);
+    --text-2: calc(var(--font-step) * 2);
+    --text-2.5: calc(var(--font-step) * 2.5);
+    --text-2.75: calc(var(--font-step) * 2.75);
+    --text-3: calc(var(--font-step) * 3);
+    --text-3.25: calc(var(--font-step) * 3.25);
+    --text-3.5: calc(var(--font-step) * 3.5);
+    --text-3.75: calc(var(--font-step) * 3.75);
+    --text-4: calc(var(--font-step) * 4);
+    --text-4.5: calc(var(--font-step) * 4.5);
+    --text-5: calc(var(--font-step) * 5);
+    --text-5.5: calc(var(--font-step) * 5.5);
+    --text-6: calc(var(--font-step) * 6);
+    --text-7: calc(var(--font-step) * 7);
+    --text-8: calc(var(--font-step) * 8);
+    --text-9: calc(var(--font-step) * 9);
+    --text-10: calc(var(--font-step) * 10);
+    
+    --place
+    
+    --container: width: 100%;
+}
+
+/* The sidebar's two levels — the section list, and a package's documentation
+   tree (see part/sidebar.vue). One name per direction, mirrored, so going into
+   a package travels the opposite way to coming back out of one.
+
+   Paired with `mode="out-in"`, which is why leave and enter can share a
+   duration without overlapping: the old panel is gone before the new one
+   starts. Anything longer than this reads as lag on what is, to the reader, a
+   single click on a link. */
+.level-in-enter-active,
+.level-in-leave-active,
+.level-out-enter-active,
+.level-out-leave-active {
+    transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+/* The leaving level is lifted out of flow so the entering one can occupy its
+   place from the first frame — which is what lets the swap happen immediately
+   and the fade be pure decoration over the top of it. `.nav` is the positioned
+   ancestor this resolves against. */
+.level-in-leave-active,
+.level-out-leave-active {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+
+    /* It is on its way out and sitting on top of the level that replaced it, so
+       it must never take a click. This also makes the one way this can go wrong
+       harmless: a tab that loses requestAnimationFrame mid-leave strands the
+       fading panel until the frames come back, and a stranded ghost that cannot
+       be clicked is a cosmetic problem rather than a dead sidebar. */
+    pointer-events: none;
+}
+
+/* Going deeper: the incoming level arrives from the right, the outgoing one
+   leaves to the left. */
+.level-in-enter-from { opacity: 0; transform: translateX(1.5rem); }
+.level-in-leave-to   { opacity: 0; transform: translateX(-1.5rem); }
+
+/* Coming back: the same journey, reversed. */
+.level-out-enter-from { opacity: 0; transform: translateX(-1.5rem); }
+.level-out-leave-to   { opacity: 0; transform: translateX(1.5rem); }
+
+/* A reader who has asked for less movement still gets the crossfade, which is
+   what carries the meaning; the travel is the part that is decoration. */
+@media (prefers-reduced-motion: reduce) {
+    .level-in-enter-from,
+    .level-in-leave-to,
+    .level-out-enter-from,
+    .level-out-leave-to {
+        transform: none;
+    }
+}
+
+/* The deckbox header's three button clusters, shrunk as the viewport
+   narrows. `zoom` rather than `scale`: a transform shrinks the paint but
+   leaves the original box in the header grid, and the box is what overflows —
+   at 375px the clusters ask for 356px of a 351px bar, so scaling alone would
+   look smaller and still clip. Zoom takes the layout with it. */
+@utility header-compact {
+    zoom: 0.8;
+    @variant sm { zoom: 0.85; }
+    @variant md { zoom: 0.9; }
+    @variant lg { zoom: 1; }
+}
+
+
+@layer utilities {
+    .drag-none {
+        user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+    }
+    
+    .scrollbar-none {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;
+    }
+
+    .prose {
+        --tw-prose-body: var(--color-text);
+
+        font-size: 1.10rem;
+        font-weight: 250;
+        font-style: normal;
+        font-stretch: 100%;
+        font-variation-settings: "slnt" 0, "GRAD" 0, "ROND" 60;
+        font-optical-sizing: auto;  
+        line-height: 1.8;
+        
+        :where(h2):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+            color: var(--color-zinc-300);
+            font-size: 1.5rem;
+            font-weight: 300;
+            font-style: normal;
+            font-stretch: 90%;
+            font-variation-settings: "slnt" 0, "GRAD" 0, "ROND" 60;
+            font-optical-sizing: auto;  
+            line-height: 1;
+        }
+    }
+}
+
+@layer base {
+    
+    *:focus {
+        outline: none;
+    }
+    
+    /* Double tap must never zoom the page. The table answers a double tap itself — it turns
+       a card over (see view/table/double-tap.js) — and a browser that zooms on the same
+       gesture is competing with the app for it.
+       
+       The viewport meta carries `user-scalable=no`, which reads like it settles this and does
+       not: iOS Safari has ignored that token since iOS 10. `touch-action` is the only thing
+       that actually decides, and `manipulation` is the value that says it: panning and pinch
+       zoom stay (pinch is how a player gets a closer look, and taking it away is an
+       accessibility cost), while double-tap zoom and the other UA-specific gestures go.
+       
+       It lives HERE and not on `body` — where it also sits below, and where it does not work.
+       html and body are the elements the viewport propagates from, and WebKit does not
+       reliably honour touch-action on either of them; a rule there computes correctly in
+       devtools while the gesture still zooms on a real iPad. A child of body is an ordinary
+       element, so it is honoured.
+       
+       Every child, rather than #app alone, because #app is not the whole app: reka-ui portals
+       its dialogs and popovers to a div of their own beside it — the deckbox among them, which
+       is the longest tappable list in the product. A rule on #app would leave exactly that
+       outside, still zooming.
+       
+       Nothing below loses its own answer: the effective behaviour is the intersection down the
+       tree, so the canvas keeps `none` (canvas/index.js claims every gesture on the table) and
+       the panel's card rows keep `pan-y` (panel/card.vue needs the vertical scroll).
+       
+       And it is not the whole answer, only the floor under it. On a real iPad a double tap on a
+       hand card still zoomed the page with `none` declared on the card itself, so the surfaces
+       that own a double tap say it again on their own elements (the table view and the hand fan)
+       and the hand cards refuse the gesture a second way, in JS — see view/table/hand.vue. */
+    body > * {
+        touch-action: manipulation;
+    }
+    
+    body {
+        position: relative;
+        
+        margin: 0;
+        padding: 0;
+        
+        color: var(--color-text);
+
+        font-family: "Google Sans Flex", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-stretch: 90%;
+        font-variation-settings: "slnt" 0, "GRAD" 20, "ROND" 0;
+        font-optical-sizing: auto;
+
+
+        background-color: black;
+        
+        text-size-adjust: none;
+        touch-action: manipulation;
+        
+        overflow: hidden;
+    }
+    
+    input,
+    textarea,
+    select,
+    button,
+    label {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+        outline: none;
+        caret-color: white
+    }
+    
+    /* For Chrome, Safari, and newer versions of Edge */
+    textarea::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* For Firefox */
+    textarea {
+        scrollbar-width: none;
+    }
+    
+    /* For Internet Explorer and Legacy Edge */
+    textarea {
+        -ms-overflow-style: none;
+    }
+    
+    button {
+        white-space: nowrap;
+    }
+    
+    select::-ms-expand {
+        display: none;
+    }
+    
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-neutral-600);
+    }
+    
+    .squircle, .squircle-01 {
+        --squircle-displacement: 3.5rem;
+        clip-path: shape(from 0 var(--squircle-displacement),
+        curve to var(--squircle-displacement) 0 with 0 0 / 0 0,
+        hline to calc(100% - var(--squircle-displacement)),
+        curve to 100% var(--squircle-displacement) with 100% 0 / 100% 0,
+        vline to calc(100% - var(--squircle-displacement)),
+        curve to calc(100% - var(--squircle-displacement)) 100% with 100% 100% / 100% 100%,
+        hline to var(--squircle-displacement),
+        curve to 0 calc(100% - var(--squircle-displacement)) with 0 100% / 0 100%,
+        close);
+    }
+    
+    .orange-gradient {
+        background-image: linear-gradient(90deg,
+        hsl(44deg 99% 62%) 0%,
+        hsl(41deg 100% 61%) 18%,
+        hsl(39deg 100% 60%) 26%,
+        hsl(36deg 100% 59%) 33%,
+        hsl(34deg 100% 58%) 39%,
+        hsl(31deg 100% 58%) 44%,
+        hsl(28deg 100% 58%) 50%,
+        hsl(24deg 100% 59%) 56%,
+        hsl(20deg 100% 59%) 61%,
+        hsl(16deg 100% 60%) 67%,
+        hsl(11deg 100% 61%) 74%,
+        hsl(6deg 100% 61%) 82%,
+        hsl(0deg 99% 62%) 100%);
+    }
+    
+    @keyframes spinner-fade {
+        0%, 100% { opacity: 0.15; }
+        50%       { opacity: 1; }
+    }
+    
+    @keyframes reveal-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes reveal-fade-2 {
+        from { opacity: 0; }
+        to { opacity: 0.2; }
+    }
+    
+    @keyframes skeleton {
+        from { background-position: 200% center; }
+        to { background-position: -200% center; }
+    }
+    
+    .skeleton {
+        background-image: linear-gradient(
+        90deg,
+        rgb(255 255 255 / 5%),
+        rgb(255 255 255 / 10%),
+        rgb(255 255 255 / 5%)
+        );
+        background-size: 200% 100%;
+        animation: 5s linear 0s infinite normal both running skeleton
+    }
+
+    @keyframes slideDown {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--reka-accordion-content-height);
+        }
+    }
+    
+    @keyframes slideUp {
+        from {
+            height: var(--reka-accordion-content-height);
+        }
+        to {
+            height: 0;
+        }
+    }
+
+    .animate-pop {
+        animation: pop 0.2s ease-out;
+    }
+    
+    @keyframes pop {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}
+
+@custom-variant stuck {
+    @container scroll-state(stuck: top) {
+        @slot;
+    }
+}

@@ -1,0 +1,21 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+
+    "name": "cardcarp",
+    "compatibility_date": "2024-04-01",
+
+    "assets": {
+        "directory": "./dist",
+        "not_found_handling": "single-page-application"
+    },
+
+    // The apex only. www is forwarded to it by a Cloudflare DNS rule, so claiming it here as a
+    // second custom domain would put this Worker in front of the redirect instead of behind it
+    // — the site would serve on both hostnames and the canonical one would stop being canonical.
+    //
+    // Each game lives on its own subdomain served by its own Worker (see apps/wow, apps/ptcg),
+    // so this deliberately does not claim *.cardcarp.com either — a wildcard would shadow them.
+    "routes": [
+        { "pattern": "cardcarp.com", "custom_domain": true }
+    ]
+}

@@ -1,0 +1,110 @@
+{
+    "name": "World of Warcraft",
+    "dataset": {
+        "source": "cardcarp"
+    },
+    "card": {
+        "size": {
+            "width": 63,
+            "height": 88
+        },
+        "table": [
+            {
+                "key": "name",
+                "label": "Name",
+                "type": "text",
+                "format": "bold"
+            },
+            {
+                "key": "set",
+                "label": "Set",
+                "type": "text",
+                "format": "standard"
+            },
+            {
+                "key": "number",
+                "label": "Number",
+                "type": "number",
+                "format": "number"
+            },
+            {
+                "key": "category",
+                "label": "Category",
+                "type": "text",
+                "format": "tag"
+            }
+        ],
+        "sort": {
+            "name": {
+                "label": "Name"
+            },
+            "card_lex": {
+                "label": "Set Number"
+            },
+            "rarity": {
+                "label": "Rarity"
+            }
+        },
+        "group": {
+            "category": {
+                "label": "Type"
+            },
+            "rarity": {
+                "label": "Rarity"
+            }
+        },
+        "filter": {
+            "name": {
+                "label": "Name",
+                "display": true,
+                "description": "Filter cards by their name.",
+                "type": "input"
+            },
+            "set_id": {
+                "label": "Sets",
+                "display": true,
+                "description": "Filter cards by their set.",
+                "type": "set"
+            },
+            "category": {
+                "label": "Category",
+                "display": true,
+                "description": "Filter cards by their category.",
+                "type": "combo",
+                "option": [
+                    "Hero",
+                    "Master Hero",
+                    "Ally",
+                    "Equipment",
+                    "Quest",
+                    "Location",
+                    "Token"
+                ]
+            },
+            "publisher": {
+                "label": "License",
+                "display": true,
+                "description": "Filter cards by their publisher.",
+                "type": "combo",
+                "default": [
+                    "Upper Deck",
+                    "Cryptozoic"
+                ],
+                "option": [
+                    "Upper Deck",
+                    "Cryptozoic",
+                    "Reborn"
+                ]
+            },
+            "distinct": {
+                "label": "Reprints",
+                "display": true,
+                "description": "Filter cards by their oracle.",
+                "type": "toggle",
+                "default": "true",
+                "label_true": "Hidden",
+                "label_false": "Shown"
+            }
+        }
+    }
+}

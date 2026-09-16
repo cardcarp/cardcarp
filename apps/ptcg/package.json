@@ -1,0 +1,36 @@
+{
+    "name": "@cardcarp/ptcg",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "description": "A project site: the Pokemon TCG archive and tabletop, one game, both packages.",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "npm run build && wrangler deploy"
+    },
+    "dependencies": {
+        "@cardcarp/core": "*",
+        "@cardcarp/deckbox": "*",
+        "@cardcarp/simulator": "*",
+        "@vueuse/core": "^14.4.0",
+        "@vueuse/integrations": "^14.4.0",
+        "@vueuse/math": "^14.4.0",
+        "file-saver": "^2.0.5",
+        "fuse.js": "^7.5.0",
+        "lodash": "^4.18.1",
+        "motion-v": "^2.4.0",
+        "reka-ui": "^2.10.4",
+        "vue": "^3.5.41",
+        "vue-router": "^5.2.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.3.3",
+        "@vitejs/plugin-vue": "^6.0.8",
+        "pug": "^3.0.4",
+        "tailwindcss": "^4.3.3",
+        "vite": "^8.2.2",
+        "wrangler": "^4.15.2"
+    }
+}

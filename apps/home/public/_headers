@@ -1,0 +1,78 @@
+# Security headers for the static-asset Worker (frontend/wrangler.jsonc).
+#
+# Vite copies public/ into dist/, and Workers static assets read _headers from the served
+# directory — so this file ships as-is with `npm run deploy`. Rules match top-down; `/*`
+# covers every route because the app is a SPA served from one asset bundle.
+#
+# Every allowance below was derived from what the code actually loads, not from a template.
+# If you add a new external origin, a directive here has to grow with it or the browser
+# blocks it silently apart from a console message.
+#
+#   storage.cardcarp.com — card art (img), the two homepage hero .webm files (media),
+#                          @font-face in main.css (font), SVG cursors, and set/card JSON
+#                          fetched at runtime (connect). A <video> is NOT covered by
+#                          img-src; it needs media-src or it falls back to default-src.
+#   *.workers.dev        — the multiplayer relay (VITE_MULTIPLAYER_WS_URL). Tighten to the
+#                          exact relay origin once it has a stable hostname; the wildcard is
+#                          here only because the subdomain is account-specific. If the relay
+#                          moves to a custom domain, this line must change or multiplayer
+#                          stops connecting.
+#   data: / blob:        — the jsPDF/JSZip print+export path, and Pixi's own asset worker,
+#                          which it builds from a Blob URL (worker-src) to decode textures
+#                          off the main thread. That worker inherits this policy, so its
+#                          fetches to storage.cardcarp.com are covered by connect-src above.
+#
+#                          data: appears in connect-src for one reason, and it is not ours:
+#                          before Pixi will use that worker it feature-tests createImageBitmap
+#                          by fetch()ing a 1x1 white PNG as a data URL. fetch() of a data: URL
+#                          is governed by connect-src, so without it the probe throws, Pixi
+#                          reads the throw as "ImageBitmap unsupported", and every texture
+#                          decodes on the main thread instead. It fails quietly — the art still
+#                          appears — so the only symptoms are a violation report and a slower
+#                          table. Widening connect-src by a whole scheme normally deserves a
+#                          hard look; data: is the exception, because a data: URL is self-
+#                          contained and has no server at the other end. There is nowhere for
+#                          it to send anything, which is the thing connect-src exists to stop.
+#
+# Deliberately NOT locked down:
+#   style-src 'unsafe-inline' — 43 components render literal style="..." attributes, and
+#                          reka-ui/motion-v inject style tags at runtime. Removing it breaks
+#                          dialogs, animations, and card layout. script-src stays strict,
+#                          which is where the real XSS protection lives.
+#   Permissions-Policy has no clipboard entry — navigator.clipboard.writeText backs the
+#                          "copy room code" button and the deck export dialog.
+#
+# Deliberately kept strict, against pressure:
+#   script-src has no 'unsafe-eval' — Pixi compiles its uniform-sync and shader-sync routines
+#                          with `new Function` and refuses to start a renderer without it. The
+#                          answer is Pixi's own `pixi.js/unsafe-eval` polyfill, imported in
+#                          canvas-pixi/scene.js, NOT a directive here. If the table ever throws
+#                          "Current environment does not allow unsafe-eval" again, that import
+#                          is what went missing; adding the keyword back would trade the app's
+#                          main XSS defence for microseconds in a scene that is batcher-bound.
+#
+# Deliberately locked to 'none' (verified unused, so these cost nothing and shut down a
+# whole class of injected-markup attacks):
+#   script-src-attr — no inline on*= handlers anywhere; Vue binds via addEventListener.
+#   form-action     — the app contains no <form> at all.
+#   frame-src       — no iframes; the YouTube/Proton links are plain anchors, and CSP does
+#                     not restrict navigation, only embedding.
+#   manifest-src    — no web app manifest is linked from index.html.
+#   base-uri        — no <base> element; blocking it stops injected markup from repointing
+#                     every relative URL on the page.
+#
+# HSTS is scoped to this host only — no includeSubDomains, no preload. storage/git/chat are
+# separate subdomains, and committing them to HTTPS-forever from here would be a decision
+# made in the wrong place. Preload especially is close to irreversible; do that at the zone
+# level, deliberately, if you ever want it.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://storage.cardcarp.com; media-src 'self' https://storage.cardcarp.com; font-src 'self' https://storage.cardcarp.com; connect-src 'self' data: https://storage.cardcarp.com; worker-src 'self' blob:; manifest-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(self), bluetooth=(), browsing-topics=(), camera=(), display-capture=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), local-fonts=(), magnetometer=(), microphone=(), midi=(), payment=(), serial=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none

@@ -1,0 +1,28 @@
+/* An example project's stylesheet.
+ *
+ * The two @source lines are the whole of what integrating the packages costs on the CSS side,
+ * and they are here rather than assumed because Tailwind v4 walks up from THIS file to find
+ * classes and skips node_modules on the way — so without them the packages compile, render,
+ * and come out unstyled, with no warning and a smaller stylesheet as the only symptom.
+ *
+ * These go through node_modules on purpose — that is the path a project installing from a
+ * registry writes, and this app is meant to be the honest version of one. The ../../../ is the
+ * one wrinkle of being inside this monorepo rather than outside it: npm workspaces hoist links
+ * to the repo root, so there is no apps/wow/node_modules to point at. An outside project drops
+ * two of those dots.
+ */
+@import "tailwindcss";
+
+@source "../../../node_modules/@cardcarp/core/src";
+@source "../../../node_modules/@cardcarp/deckbox/src";
+
+@theme {
+    --color-text: var(--color-neutral-400);
+    --color-brand-green: hsl(73 99 62 / 1);
+    --color-brand-blue: hsl(183 99 62 / 1);
+    --color-brand-tert: hsl(43 99 62 / 1);
+    --color-charcoal: hsl(0 0 20 / 1);
+    --color-coal: hsl(234 12 11);
+}
+
+html, body, #app { height: 100%; margin: 0; }

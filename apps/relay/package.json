@@ -1,0 +1,17 @@
+{
+    "name": "cardcarp-relay",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "wrangler dev",
+        "deploy": "wrangler deploy",
+        "tail": "wrangler tail"
+    },
+    "dependencies": {
+        "partyserver": "^0.5.10"
+    },
+    "devDependencies": {
+        "wrangler": "^4.15.2"
+    }
+}

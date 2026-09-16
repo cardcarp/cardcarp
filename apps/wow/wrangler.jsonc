@@ -1,0 +1,27 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+
+    // Worker script names are unique per Cloudflare ACCOUNT, not per project — there is no
+    // grouping above them — so each app here needs a distinct one or two deploys overwrite
+    // each other. Same rule the relay's config calls out.
+    "name": "cardcarp-wow",
+    "compatibility_date": "2025-01-01",
+
+    // A single-page app served straight from the build output. not_found_handling is what
+    // makes /deckbox work on a hard refresh: without it the asset server 404s a path that
+    // only exists inside the client router.
+    "assets": {
+        "directory": "./dist",
+        "not_found_handling": "single-page-application"
+    },
+
+    // The domain. custom_domain tells Cloudflare to create and manage the DNS record and the
+    // certificate for this hostname, which is what you want for a subdomain that belongs to
+    // this Worker and nothing else — as opposed to a route pattern, which layers a Worker
+    // over a zone that is already serving something.
+    //
+    // Requires cardcarp.com to be a zone on the same account as the Worker.
+    "routes": [
+        { "pattern": "wow.cardcarp.com", "custom_domain": true }
+    ]
+}

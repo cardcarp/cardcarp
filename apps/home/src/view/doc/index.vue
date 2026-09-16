@@ -56,6 +56,21 @@ const body = computed(() => {
     return load ? defineAsyncComponent(load) : null
 })
 
+// The doc column's scroll container, handed to the rail so it can measure and
+// scroll the right box.
+//
+// Found by querying inside this view's own root rather than by putting a ref on
+// the Reka component: a `ref` on one of those yields a component instance whose
+// `$el` is not the scrolling div, so the rail attached its scroll listener to
+// nothing and silently never updated — the kind of failure that looks like it
+// works, because the first entry is correct until you scroll.
+//
+// Scoped to `shell` rather than a bare document query, so it cannot pick up
+// some other route's scroll area, and written as a getter so the rail always
+// re-resolves rather than holding a node across a re-render.
+const shell = ref(null)
+const viewportEl = () => shell.value?.querySelector('[data-reka-scroll-area-viewport]') ?? null
+
 // The right rail's contents, declared by the page itself (`export const toc`).
 // Taken off the module rather than passed as a prop, because the page renders
 // as an async component and nothing here holds its instance — and awaiting the
@@ -85,21 +100,6 @@ watch([() => props.pkg, page], async () => {
 
     toc.value = mod.toc ?? []
 }, { immediate: true })
-
-// The doc column's scroll container, handed to the rail so it can measure and
-// scroll the right box.
-//
-// Found by querying inside this view's own root rather than by putting a ref on
-// the Reka component: a `ref` on one of those yields a component instance whose
-// `$el` is not the scrolling div, so the rail attached its scroll listener to
-// nothing and silently never updated — the kind of failure that looks like it
-// works, because the first entry is correct until you scroll.
-//
-// Scoped to `shell` rather than a bare document query, so it cannot pick up
-// some other route's scroll area, and written as a getter so the rail always
-// re-resolves rather than holding a node across a re-render.
-const shell = ref(null)
-const viewportEl = () => shell.value?.querySelector('[data-reka-scroll-area-viewport]') ?? null
 
 // The head is set here rather than per page, because the tree already holds
 // every page's name and the package's tagline. A page that wanted its own
@@ -200,18 +200,20 @@ NotFound(
 
                 .column(class="w-full")
 
-                    .breadcrumbs(class="flex gap-2 items-center text-3 text-zinc-500 font-stretch-120%")
+                    //- Always three deep: the doc trees are flat, so every page
+                    //- sits directly under its package's index.
+                    nav.breadcrumbs(aria-label="Breadcrumb" class="flex gap-2 items-center text-3 text-zinc-500 font-stretch-120%")
                         router-link(
                             :to="{ name: 'home' }"
                             class="group/btn relative hover:text-white"
                         ) Home
-                        span(class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
+                        span(aria-hidden="true" class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
                         router-link(
-                            :to="{ name: 'home' }"
+                            :to="{ name: pkg }"
                             class="group/btn relative hover:text-white"
                         ) {{ tree.name }}
-                        span(class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
-                        span(class="group/btn relative text-white cursor-default") {{ page.name }}
+                        span(aria-hidden="true" class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
+                        span(aria-current="page" class="group/btn relative text-white cursor-default") {{ page.name }}
 
                     header(class="mt-3 flex flex-col gap-3 leading-none")
                         h1(class="text-white text-8 font-semibold font-stretch-120%") {{ page.name }}

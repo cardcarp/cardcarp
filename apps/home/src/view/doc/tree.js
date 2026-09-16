@@ -4,7 +4,7 @@
 //
 // A tree is DECLARED here rather than discovered from the page folder, because
 // order and grouping are the thing a docs tree is for and a glob has neither.
-// The glob still resolves each page's component; what it cannot supply is which
+// The glob in ./loader.js still resolves each page's component; what it cannot supply is which
 // section a page belongs to, what it sits between, and whether it is written
 // yet. So: this file owns the shape, ./page/<pkg>/ owns the prose.
 //
@@ -21,10 +21,6 @@
 // is not an error: the nav marks it and the shell renders a placeholder, which
 // is a truthful empty page rather than a link into nothing. Drop a matching file
 // into ./page/<pkg>/ and delete the flag — nothing else changes.
-
-// Compile-time map of { './page/<pkg>/<file>.vue': () => import(...) }. Indexing
-// it with a slug is safe: an unknown key is undefined, not a dynamic path.
-const registry = import.meta.glob('./page/*/*.vue')
 
 export const DOC = {
     deckbox: {
@@ -164,13 +160,4 @@ export function neighbours(pkg, slug = '') {
     const i = all.findIndex((page) => page.slug === slug)
     if (i === -1) return { prev: null, next: null }
     return { prev: all[i - 1] ?? null, next: all[i + 1] ?? null }
-}
-
-// The loader for a page's component, or null when it has none — a draft, or a
-// tree entry whose file has not landed yet. Both render the shell's placeholder,
-// which is why this returns null rather than throwing: a tree that names a page
-// it cannot resolve is a page to be written, not a broken build.
-export function loader(pkg, page) {
-    if (!page) return null
-    return registry[`./page/${pkg}/${page.file ?? page.slug}.vue`] ?? null
 }

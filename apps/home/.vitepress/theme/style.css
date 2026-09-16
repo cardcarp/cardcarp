@@ -1,0 +1,93 @@
+/* The SPA's stylesheet, as it is — Tailwind, the theme tokens, the prose settings — plus what
+   rendered Markdown needs that the Vue pages spelled out in utility classes inline. */
+
+@import "../../src/style/main.css";
+
+/* Tailwind finds sources from the Vite root, which VitePress sets to site/. The shell, the
+   theme and the SPA's components all live outside it, so name them — a class only these use
+   would otherwise be missing from the build with nothing to say so. */
+@source "../../src";
+@source "../../site";
+@source "./";
+
+@layer components {
+
+    /* Inline code — what `span.font-mono.text-neutral-300` was on every page. Typography's own
+       backticks and weight are dropped so a backticked word reads as it did. */
+    .prose :where(code):not(:where(.code-block *, [class~="not-prose"] *)) {
+        font-family: var(--font-mono);
+        font-size: inherit;
+        font-weight: inherit;
+        color: var(--color-neutral-300);
+
+        &::before,
+        &::after {
+            content: none;
+        }
+    }
+
+    /* Links — what `text-mist-500 hover:underline` was. */
+    .prose :where(a):not(:where([class~="not-prose"] *)) {
+        color: var(--color-mist-500);
+        font-weight: inherit;
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    /* Where a heading lands when a link scrolls to it. VitePress scrolls a #heading into view
+       itself (a search result, a shared link), and the rail scrolls to the same 24px above the
+       heading (see src/view/doc/toc.vue), so either way it clears the blur at the top. */
+    .prose :where(h2[id]) {
+        scroll-margin-top: calc(var(--spacing) * 6);
+    }
+
+    /* VitePress puts a permalink anchor inside every heading. The right rail is how this site
+       links to a section, so these stay out of sight. */
+    .prose .header-anchor {
+        display: none;
+    }
+
+    /* A fenced code block — the same box part/code-block.vue draws. VitePress emits
+       <div class="language-*"><button class="copy"><span class="lang"><pre class="shiki">, and
+       config.mjs puts the fence's [label] into .lang and adds `code-block not-prose` to the div. */
+    .code-block[class*="language-"] {
+        position: relative;
+        margin-block: calc(var(--spacing) * 6);
+        background-color: var(--color-neutral-950);
+        border-radius: var(--radius-lg);
+        box-shadow: inset 0 -1px 0 0 hsl(0 0 16), inset 0 2px 2px 1px black, inset 0 0 20px 0 hsl(0 0 2);
+
+        > .copy {
+            display: none;
+        }
+
+        > .lang {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: calc(var(--spacing) * 2) calc(var(--spacing) * 3);
+            font-family: var(--font-mono);
+            font-size: var(--text-2\.5);
+            line-height: 1;
+            color: rgb(255 255 255 / 0.2);
+        }
+
+        > pre {
+            margin: 0;
+            padding: calc(var(--spacing) * 4);
+            overflow-x: auto;
+            /* Shiki writes the theme's background inline; the box above is the background. */
+            background-color: transparent !important;
+        }
+
+        > pre code {
+            font-family: var(--font-mono);
+            font-size: var(--text-3);
+            line-height: 1.625;
+            white-space: pre;
+        }
+    }
+}

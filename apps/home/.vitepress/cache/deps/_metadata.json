@@ -1,0 +1,114 @@
+{
+  "hash": "d0df353e",
+  "configHash": "f89a1cfa",
+  "lockfileHash": "445b456c",
+  "browserHash": "8bfd30c8",
+  "optimized": {
+    "highlight.js/lib/core": {
+      "src": "../../../../../node_modules/highlight.js/es/core.js",
+      "file": "highlight__js_lib_core.js",
+      "fileHash": "9f4bb61a",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/bash": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/bash.js",
+      "file": "highlight__js_lib_languages_bash.js",
+      "fileHash": "9ef7303b",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/css": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/css.js",
+      "file": "highlight__js_lib_languages_css.js",
+      "fileHash": "6371a60d",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/ini": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/ini.js",
+      "file": "highlight__js_lib_languages_ini.js",
+      "fileHash": "db87f346",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/javascript": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/javascript.js",
+      "file": "highlight__js_lib_languages_javascript.js",
+      "fileHash": "8577f134",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/json": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/json.js",
+      "file": "highlight__js_lib_languages_json.js",
+      "fileHash": "ad04de58",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/plaintext": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/plaintext.js",
+      "file": "highlight__js_lib_languages_plaintext.js",
+      "fileHash": "b522f8dc",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/python": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/python.js",
+      "file": "highlight__js_lib_languages_python.js",
+      "fileHash": "ceb96c9d",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/typescript": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/typescript.js",
+      "file": "highlight__js_lib_languages_typescript.js",
+      "fileHash": "b56fdd44",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/xml": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/xml.js",
+      "file": "highlight__js_lib_languages_xml.js",
+      "fileHash": "4ae44996",
+      "needsInterop": false
+    },
+    "highlight.js/lib/languages/yaml": {
+      "src": "../../../../../node_modules/highlight.js/es/languages/yaml.js",
+      "file": "highlight__js_lib_languages_yaml.js",
+      "fileHash": "32f5acc9",
+      "needsInterop": false
+    },
+    "motion-v": {
+      "src": "../../../../../node_modules/motion-v/dist/es/index.mjs",
+      "file": "motion-v.js",
+      "fileHash": "aa7b2972",
+      "needsInterop": false
+    },
+    "reka-ui": {
+      "src": "../../../../../node_modules/reka-ui/dist/index.js",
+      "file": "reka-ui.js",
+      "fileHash": "9c04cb00",
+      "needsInterop": false
+    },
+    "vitepress > @vue/devtools-api": {
+      "src": "../../../../../node_modules/@vue/devtools-api/dist/index.js",
+      "file": "vitepress_n_@vue_devtools-api.js",
+      "fileHash": "00e37eee",
+      "needsInterop": false
+    },
+    "vitepress > @vueuse/core": {
+      "src": "../../../../../node_modules/@vueuse/core/dist/index.js",
+      "file": "vitepress_n_@vueuse_core.js",
+      "fileHash": "f9a6c207",
+      "needsInterop": false
+    },
+    "vue": {
+      "src": "../../../../../node_modules/vue/dist/vue.runtime.esm-bundler.js",
+      "file": "vue.js",
+      "fileHash": "c3acefde",
+      "needsInterop": false
+    }
+  },
+  "chunks": {
+    "rolldown-runtime-DC62tzP2": {
+      "file": "rolldown-runtime-DC62tzP2.js",
+      "isDynamicEntry": false
+    },
+    "vue.runtime.esm-bundler-BXQa1jvq": {
+      "file": "vue.runtime.esm-bundler-BXQa1jvq.js",
+      "isDynamicEntry": false
+    }
+  }
+}

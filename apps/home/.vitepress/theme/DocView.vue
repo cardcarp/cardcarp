@@ -1,26 +1,20 @@
 <script setup>
-// Host for /deckbox, /simulator and /compile — one documentation tree per tool,
-// rendered inside the home shell so the site nav stays put.
+// A documentation page inside the shell: header, breadcrumbs, the page body, the
+// pager, and the right rail. Ported from src/view/doc/index.vue.
 //
-// This is the PAGE only. The tree that navigates it lives in the primary
-// sidebar, nested inside its package's pill (see part/sidebar.vue and
-// ./nav.vue), so there is exactly one of it at every width and this view is a
-// single column like every other route's.
+// What changed in the port is mostly what this no longer does:
 //
-// The two routes differ only by `pkg`. Everything that varies between them —
-// the sections, the page order, which pages exist — is data in ./tree.js, and
-// the prose is a plain Vue component under ./page/<pkg>/, so a page that wants
-// a live demo of the thing it documents can just render one.
-//
-// A page named by the tree with no component behind it is a DRAFT, not a 404.
-// The tree is the outline of the docs, written ahead of the prose; a planned
-// page renders a placeholder saying so and keeps its URL. A slug that is in no
-// tree at all is the genuine miss, and hands off to view/not-found.vue — the
-// same 404 the catch-all route renders, told which tree was being read so it can
-// offer the way back to it.
+//   - The body is VitePress's <Content />. A converted page is Markdown; a page
+//     not converted yet, or a draft, is the dynamic route site/[pkg]/[slug].md,
+//     which renders the old component or the placeholder itself.
+//   - A slug in no tree never reaches here — there is no HTML file for it, so it
+//     is VitePress's 404, and Layout.vue renders NotFound with this tree's way back.
+//   - The head is resolved at build time from the tree (see config.mjs), so the
+//     title and description are in the HTML rather than set by script.
 
 // Core
-import { computed, defineAsyncComponent, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, shallowRef, watch } from 'vue'
+import { useData, useRoute } from 'vitepress'
 
 // UI
 import {
@@ -32,30 +26,24 @@ import {
 
 // Components
 import CodeBlock from '@/part/code-block.vue'
-import NotFound from '@/view/not-found.vue'
-import Toc from './toc.vue'
-
-// Composables
-import { setTitle, setDescription } from '@/composable/head.js'
+import Toc from '@/view/doc/toc.vue'
 
 // Data
-import { doc, findPage, neighbours } from './tree.js'
-import { loader } from './loader.js'
+import { doc, findPage, neighbours } from '@/view/doc/tree.js'
+import { loader } from '@/view/doc/loader.js'
+import { pageHref } from './link.js'
 
 const props = defineProps({
     pkg: { type: String, required: true },   // 'deckbox' | 'simulator' | 'compile'
     slug: { type: String, default: '' }      // '' is the package's index page
 })
 
+const { page: data, params } = useData()
+const route = useRoute()
+
 const tree = computed(() => doc(props.pkg))
 const page = computed(() => findPage(props.pkg, props.slug))
 const link = computed(() => neighbours(props.pkg, props.slug))
-
-// null for a draft or an unresolved slug — both fall through to a placeholder.
-const body = computed(() => {
-    const load = loader(props.pkg, page.value)
-    return load ? defineAsyncComponent(load) : null
-})
 
 // The doc column's scroll container, handed to the rail so it can measure and
 // scroll the right box.
@@ -72,52 +60,60 @@ const body = computed(() => {
 const shell = ref(null)
 const viewportEl = () => shell.value?.querySelector('[data-reka-scroll-area-viewport]') ?? null
 
-// The right rail's contents, declared by the page itself (`export const toc`).
-// Taken off the module rather than passed as a prop, because the page renders
-// as an async component and nothing here holds its instance — and awaiting the
-// same loader reuses Vite's cached import rather than fetching twice.
+// The right rail's contents.
 //
-// `shallowRef` because this is a plain array of plain objects that is replaced
-// wholesale on every page: making each entry deeply reactive would buy nothing
-// and cost a walk of the list.
-const toc = shallowRef([])
+// A Markdown page's come from its own h2s, extracted at build time — so they are
+// in the pre-rendered HTML, and there is no list to keep in step with the
+// headings. A page not converted yet still declares `export const toc`, read off
+// its module as before, which only happens in the browser.
+const legacyToc = shallowRef([])
 
-watch([() => props.pkg, page], async () => {
-    viewportEl()?.scrollTo({ top: 0, behavior: 'instant' })
+const toc = computed(() => {
+    if (params.value?.kind === 'legacy') return legacyToc.value
+    return (data.value.headers ?? []).map((header) => ({ id: header.slug, name: header.title }))
+})
+
+watch(() => route.path, async () => {
+    legacyToc.value = []
+    if (params.value?.kind !== 'legacy') return
 
     const load = loader(props.pkg, page.value)
-    if (!load) {
-        toc.value = []
-        return
-    }
+    if (!load) return
 
-    const slug = page.value?.slug
+    const path = route.path
     const mod = await load()
 
     // The await means another navigation may have landed while this was in
     // flight — a fast click through the tree does exactly that. Drop the result
     // if it is no longer the page being shown.
-    if (page.value?.slug !== slug) return
+    if (route.path !== path) return
 
-    toc.value = mod.toc ?? []
+    legacyToc.value = mod.toc ?? []
 }, { immediate: true })
 
-// The head is set here rather than per page, because the tree already holds
-// every page's name and the package's tagline. A page that wanted its own
-// description would be the exception, and there is not one yet.
-watch(
-    [tree, page],
-    () => {
-        const name = tree.value?.name ?? props.pkg
-        setTitle(
-            !page.value ? `Not found — ${name}`
-                : page.value.slug ? `${page.value.name} — ${name}`
-                    : name
-        )
-        setDescription(tree.value?.tagline)
-    },
-    { immediate: true }
-)
+// Where the column lands on arrival: the heading the URL names, or the top.
+//
+// VitePress scrolls the WINDOW on navigation, and this page scrolls inside its
+// own container, so both cases are handled here — a new page would otherwise
+// open at the previous page's scroll position, and a /page#heading link would
+// open at the top.
+function land() {
+    const root = viewportEl()
+    if (!root) return
+
+    const id = decodeURIComponent(window.location.hash.slice(1))
+    const target = id && document.getElementById(id)
+
+    if (target && root.contains(target)) {
+        const delta = target.getBoundingClientRect().top - root.getBoundingClientRect().top
+        root.scrollTo({ top: root.scrollTop + delta - 24, behavior: 'instant' })
+    } else {
+        root.scrollTo({ top: 0, behavior: 'instant' })
+    }
+}
+
+onMounted(land)
+watch(() => route.path, () => nextTick(land), { flush: 'post' })
 
 // The install line a package's index page leads with, and the only sample the
 // shell owns rather than a page — it belongs to the package rather than to any
@@ -134,20 +130,9 @@ const install = computed(() => tree.value?.install ?? `npm install ${tree.value?
 //- sample too wide to shrink would otherwise hold the whole column open and push
 //- the page off a narrow screen — which is also why every sample scrolls inside
 //- its own box (see part/code-block.vue).
-//- A slug in no tree is the genuine miss, and it renders the site's 404 rather
-//- than a variant of one. NotFound brings its own scroll shell, so it replaces
-//- this view's outright instead of sitting inside it.
-NotFound(
-    v-if="!page"
-    :message="`There is no “${slug}” page in the ${tree?.name ?? pkg} documentation.`"
-    :back="{ name: pkg }"
-    :backLabel="`${tree?.name ?? pkg} docs`"
-)
-
 //- The page and its rail are one panel, not two: the rail is chrome for what is
 //- beside it, and floating it in its own card would read as a second document.
 .doc-view(
-    v-else
     ref="shell"
     class="relative flex-1 min-w-0 min-h-0 flex z-10 bg-linear-to-br to-neutral-950 from-neutral-900 rounded-xl"
     style="box-shadow: 0 -1px 2px 0 hsl(0 0 30), 0 0 2px 2px hsl(0 0 0), 0.3px 0.5px 0.9px hsl(0 0 0 / 0), 2px 4px 6.7px hsl(0 0 0 / 0.02), 3.5px 7px 11.7px hsl(0 0 0 / 0.04), 5.1px 10.2px 17.1px hsl(0 0 0 / 0.06), 7.1px 14.2px 23.8px hsl(0 0 0 / 0.07), 9.8px 19.6px 32.9px hsl(0 0 0 / 0.09), 13.6px 27.2px 45.6px hsl(0 0 0 / 0.11), 18.8px 37.5px 62.9px hsl(0 0 0 / 0.13)"
@@ -204,13 +189,13 @@ NotFound(
                     //- Always three deep: the doc trees are flat, so every page
                     //- sits directly under its package's index.
                     nav.breadcrumbs(aria-label="Breadcrumb" class="flex gap-2 items-center text-3 text-zinc-500 font-stretch-120%")
-                        router-link(
-                            :to="{ name: 'home' }"
+                        a(
+                            href="/"
                             class="group/btn relative hover:text-white"
                         ) Home
                         span(aria-hidden="true" class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
-                        router-link(
-                            :to="{ name: pkg }"
+                        a(
+                            :href="`/${pkg}`"
                             class="group/btn relative hover:text-white"
                         ) {{ tree.name }}
                         span(aria-hidden="true" class="relative top-px text-6 font-extralight font-stretch-100% text-neutral-700 cursor-default") /
@@ -223,34 +208,24 @@ NotFound(
                     //- The package's own install line, on its index page only.
                     CodeBlock(v-if="!page.slug" :code="install" label="shell")
 
-                    component(v-if="body" :is="body" class="block mt-8 prose")
-
-                    //- A page the tree names and nobody has written yet.
-                    .draft(
-                        v-else
-                        class="mt-8 px-6 py-10 flex flex-col items-center gap-2 text-center bg-black/30 rounded-xl"
-                        style="box-shadow: inset 0 0 0 1px hsl(0 0 100 / 0.04)"
-                    )
-                        svg(class="size-6 text-yellow-600/50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round")
-                            path(d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7")
-                            path(d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z")
-                        .title(class="text-white text-4 font-light") Not written yet
-                        .detail(class="max-w-100 text-3.25 text-neutral-500 font-light leading-relaxed") “{{ page.name }}” is part of this tree but has no page behind it. Add #[span(class="font-mono text-neutral-400") view/doc/page/{{ pkg }}/{{ page.slug }}.vue] and drop the draft flag in #[span(class="font-mono text-neutral-400") view/doc/tree.js].
+                    //- The page itself: rendered Markdown, or — from the dynamic route — a
+                    //- page not converted yet, or a draft's placeholder.
+                    Content(class="block mt-8 prose")
 
                     //- Prev / next along the flattened tree.
                     .pager(v-if="link.prev || link.next" class="mt-16 flex gap-3")
-                        router-link(
+                        a(
                             v-if="link.prev"
-                            :to="link.prev.slug ? { name: `${pkg}-page`, params: { slug: link.prev.slug } } : { name: pkg }"
+                            :href="pageHref(pkg, link.prev)"
                             class="group/btn flex-1 px-4 py-3 flex flex-col gap-1.5 text-left bg-black/30 rounded-lg leading-none hover:brightness-125"
                             style="box-shadow: inset 0 0 0 1px hsl(0 0 100 / 0.04)"
                         )
                             .label(class="font-mono text-2.5 text-white/25") Previous
                             .name(class="text-3.5 text-neutral-400 font-light truncate group-hover/btn:text-white") {{ link.prev.name }}
 
-                        router-link(
+                        a(
                             v-if="link.next"
-                            :to="link.next.slug ? { name: `${pkg}-page`, params: { slug: link.next.slug } } : { name: pkg }"
+                            :href="pageHref(pkg, link.next)"
                             class="group/btn flex-1 px-4 py-3 flex flex-col gap-1.5 text-right bg-black/30 rounded-lg leading-none hover:brightness-125"
                             style="box-shadow: inset 0 0 0 1px hsl(0 0 100 / 0.04)"
                         )

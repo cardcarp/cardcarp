@@ -10,7 +10,10 @@
         "dev": "vite",
         "build": "vite build",
         "preview": "vite preview",
-        "deploy": "npm run build && wrangler deploy"
+        "deploy": "npm run build && wrangler deploy",
+        "site:dev": "vitepress dev",
+        "site:build": "vitepress build",
+        "site:preview": "vitepress preview"
     },
     "dependencies": {
         "@cardcarp/core": "*",
@@ -31,6 +34,7 @@
         "highlight.js": "^11.12.0",
         "pug": "^3.0.4",
         "vite": "^8.2.2",
+        "vitepress": "^2.0.0-alpha.20",
         "wrangler": "^4.15.2"
     },
     "description": "cardcarp.com — the documentation site: a docs tree per package, and the projects built on them."

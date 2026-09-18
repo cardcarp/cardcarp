@@ -1,0 +1,45 @@
+{
+    "name": "@cardcarp/simulator",
+    "version": "0.1.0",
+    "description": "The virtual tabletop as one object: stage geometry, the Pixi canvas, seats, and the multiplayer client that pairs with cardcarp-relay. No UI — an app brings its own.",
+    "keywords": [
+        "cardcarp",
+        "card-game",
+        "tcg",
+        "tabletop",
+        "virtual-tabletop",
+        "pixijs",
+        "multiplayer"
+    ],
+    "license": "MIT-0",
+    "author": "CardCarp",
+    "homepage": "https://cardcarp.com/simulator",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/cardcarp/cardcarp.git",
+        "directory": "packages/simulator"
+    },
+    "bugs": "https://github.com/cardcarp/cardcarp/issues",
+    "type": "module",
+    "exports": {
+        ".": "./src/index.js",
+        "./*": "./src/*"
+    },
+    "files": [
+        "src",
+        "!src/**/*.test.mjs"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "peerDependencies": {
+        "@cardcarp/core": "^0.1.0"
+    },
+    "dependencies": {
+        "motion": "^13.2.0",
+        "pixi.js": "^8.20.1"
+    }
+}

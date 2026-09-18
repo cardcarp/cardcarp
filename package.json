@@ -1,0 +1,25 @@
+{
+    "name": "cardcarp",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
+    "scripts": {
+        "dev": "npm run dev --workspace @cardcarp/home",
+        "dev:home": "npm run dev --workspace @cardcarp/home",
+        "dev:wow": "npm run dev --workspace @cardcarp/wow",
+        "dev:ptcg": "npm run dev --workspace @cardcarp/ptcg",
+        "dev:relay": "npm run dev --workspace cardcarp-relay",
+        "build": "npm run build --workspaces --if-present",
+        "test": "node packages/simulator/src/stage.test.mjs && node packages/simulator/src/canvas-pixi/selection.test.mjs && node packages/simulator/src/canvas-pixi/tools/card.test.mjs && node packages/simulator/src/headless.test.mjs && node apps/template/src/simulator/boundary.test.mjs && node apps/template/src/core/config.test.mjs && node packages/simulator/src/tactility/core.test.mjs && node packages/simulator/src/state/store.test.mjs && node packages/simulator/src/seats.test.mjs && node packages/simulator/src/store.test.mjs && node packages/simulator/src/game.test.mjs && node packages/simulator/src/events.test.mjs && node packages/simulator/src/socket.test.mjs && node packages/deckbox/src/probability.test.mjs && node packages/deckbox/src/deck-import.test.mjs && node packages/deckbox/src/print-sheet.test.mjs"
+    },
+    "devDependencies": {
+        "pug": "^3.0.4"
+    },
+    "overrides": {
+        "sharp": "^0.35.4"
+    }
+}

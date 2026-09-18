@@ -1,0 +1,344 @@
+@import "tailwindcss";
+@source "./";
+@plugin "@tailwindcss/typography";
+
+@theme {
+    --font-sans: "Google Sans Flex", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'Google Sans Code', ui-monospace, monospace;
+    --color-text: var(--color-neutral-400);
+    --color-brand-green: hsl(73 99 62 / 1);
+    --color-brand-blue: hsl(183 99 62 / 1);
+    --color-brand-tert: hsl(43 99 62 / 1);
+    --color-charcoal: hsl(0 0 20 / 1);
+    --color-coal: hsl(234 12 11);
+    
+    --color-swamp-50: oklch(96.37% 0.0014 167.38);
+    --color-swamp-100: oklch(93.01% 0.0036 165.543);
+    --color-swamp-200: oklch(87.79% 0.0064 166.202);
+    --color-swamp-300: oklch(80.83% 0.0099 166.699);
+    --color-swamp-400: oklch(71.55% 0.0124 165.646);
+    --color-swamp-500: oklch(63.54% 0.012 165.2);
+    --color-swamp-600: oklch(51.94% 0.0102 165.647);
+    --color-swamp-700: oklch(41.73% 0.0082 167.079);
+    --color-swamp-800: oklch(32.92% 0.0065 167.86);
+    --color-swamp-900: oklch(26.65% 0.0053 169.076);
+    --color-swamp-950: oklch(13.19% 0.0034 171.243);
+    
+    --color-swamp-harmony-1: oklch(46.76% 0.0114 316.515);
+    --color-swamp-harmony-2: oklch(46.63% 0.0109 250.632);
+    
+    --font-step: 0.25rem;
+    
+    --text-1: calc(var(--font-step) * 1);
+    --text-2: calc(var(--font-step) * 2);
+    --text-2.5: calc(var(--font-step) * 2.5);
+    --text-2.75: calc(var(--font-step) * 2.75);
+    --text-3: calc(var(--font-step) * 3);
+    --text-3.25: calc(var(--font-step) * 3.25);
+    --text-3.5: calc(var(--font-step) * 3.5);
+    --text-3.75: calc(var(--font-step) * 3.75);
+    --text-4: calc(var(--font-step) * 4);
+    --text-4.5: calc(var(--font-step) * 4.5);
+    --text-5: calc(var(--font-step) * 5);
+    --text-5.5: calc(var(--font-step) * 5.5);
+    --text-6: calc(var(--font-step) * 6);
+    --text-7: calc(var(--font-step) * 7);
+    --text-8: calc(var(--font-step) * 8);
+    --text-9: calc(var(--font-step) * 9);
+    --text-10: calc(var(--font-step) * 10);
+    
+    --place
+    
+    --container: width: 100%;
+}
+
+@utility flex-0 { flex: 0 0 0; }
+
+@utility pointer-default { cursor: var(--pointer-default, auto); }
+@utility pointer-point { cursor: url("/image/pointer-point.svg") 8 8, auto; }
+@utility pointer-text { cursor: text; }
+@utility pointer-open { cursor: url("/image/pointer-open.svg") 8 8, auto; }
+@utility pointer-close { cursor: url("/image/pointer-close.svg") 8 8, auto; }
+
+@utility animate-slideUp { animation: 300ms ease-out 0s 1 normal both running slideUp }
+@utility animate-slideDown { animation: 300ms ease-out 0s 1 normal both running slideDown }
+
+@utility transition-col { transition: grid-template-columns 300ms ease-in-out; }
+
+.level-in-enter-active,
+.level-in-leave-active,
+.level-out-enter-active,
+.level-out-leave-active {
+    transition: opacity 160ms ease-out, transform 160ms ease-out;
+}
+
+.level-in-leave-active,
+.level-out-leave-active {
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+
+    pointer-events: none;
+}
+
+.level-in-enter-from { opacity: 0; transform: translateX(1.5rem); }
+.level-in-leave-to   { opacity: 0; transform: translateX(-1.5rem); }
+
+.level-out-enter-from { opacity: 0; transform: translateX(-1.5rem); }
+.level-out-leave-to   { opacity: 0; transform: translateX(1.5rem); }
+
+@media (prefers-reduced-motion: reduce) {
+    .level-in-enter-from,
+    .level-in-leave-to,
+    .level-out-enter-from,
+    .level-out-leave-to {
+        transform: none;
+    }
+}
+
+@utility header-compact {
+    zoom: 0.8;
+    @variant sm { zoom: 0.85; }
+    @variant md { zoom: 0.9; }
+    @variant lg { zoom: 1; }
+}
+
+
+@layer utilities {
+    .drag-none {
+        user-select: none;
+        -webkit-user-drag: none;
+        -khtml-user-drag: none;
+        -moz-user-drag: none;
+        -o-user-drag: none;
+        user-drag: none;
+    }
+    
+    .scrollbar-none {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    
+    .scrollbar-none::-webkit-scrollbar {
+        display: none;
+    }
+
+    .prose {
+        --tw-prose-body: var(--color-text);
+
+        font-size: 1.10rem;
+        font-weight: 250;
+        font-style: normal;
+        font-stretch: 100%;
+        font-variation-settings: "slnt" 0, "GRAD" 0, "ROND" 60;
+        font-optical-sizing: auto;  
+        line-height: 1.8;
+        
+        :where(h2):not(:where([class~="not-prose"],[class~="not-prose"] *)) {
+            color: var(--color-zinc-300);
+            font-size: 1.5rem;
+            font-weight: 300;
+            font-style: normal;
+            font-stretch: 90%;
+            font-variation-settings: "slnt" 0, "GRAD" 0, "ROND" 60;
+            font-optical-sizing: auto;  
+            line-height: 1;
+        }
+    }
+}
+
+@layer base {
+    
+    *:focus {
+        outline: none;
+    }
+    
+    html {
+        cursor: var(--pointer-default, auto);
+    }
+    
+    /* No double-tap zoom: the table uses double tap to flip cards. */
+    body > * {
+        touch-action: manipulation;
+    }
+    
+    body {
+        position: relative;
+        
+        margin: 0;
+        padding: 0;
+        
+        color: var(--color-text);
+
+        font-family: "Google Sans Flex", ui-sans-serif, system-ui, sans-serif;
+        font-weight: 400;
+        font-style: normal;
+        font-stretch: 90%;
+        font-variation-settings: "slnt" 0, "GRAD" 20, "ROND" 0;
+        font-optical-sizing: auto;
+
+
+        background-color: black;
+        
+        cursor: var(--pointer-default, auto);
+        
+        user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+        
+        text-size-adjust: none;
+        touch-action: manipulation;
+        
+        overflow: hidden;
+    }
+    
+    
+    a {
+        cursor: var(--pointer-default, auto);
+    }
+    
+    input,
+    textarea,
+    select,
+    button,
+    label {
+        appearance: none;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+        outline: none;
+        caret-color: white
+    }
+    
+    input { cursor: text; }
+    button { cursor: var(--pointer-default, auto); }
+    
+    /* For Chrome, Safari, and newer versions of Edge */
+    textarea::-webkit-scrollbar {
+        display: none;
+    }
+    
+    /* For Firefox */
+    textarea {
+        scrollbar-width: none;
+    }
+    
+    textarea {
+        -ms-overflow-style: none;
+    }
+    
+    button {
+        white-space: nowrap;
+    }
+    
+    select::-ms-expand {
+        display: none;
+    }
+    
+    input::placeholder,
+    textarea::placeholder {
+        color: var(--color-neutral-600);
+    }
+    
+    .squircle, .squircle-01 {
+        --squircle-displacement: 3.5rem;
+        clip-path: shape(from 0 var(--squircle-displacement),
+        curve to var(--squircle-displacement) 0 with 0 0 / 0 0,
+        hline to calc(100% - var(--squircle-displacement)),
+        curve to 100% var(--squircle-displacement) with 100% 0 / 100% 0,
+        vline to calc(100% - var(--squircle-displacement)),
+        curve to calc(100% - var(--squircle-displacement)) 100% with 100% 100% / 100% 100%,
+        hline to var(--squircle-displacement),
+        curve to 0 calc(100% - var(--squircle-displacement)) with 0 100% / 0 100%,
+        close);
+    }
+    
+    .orange-gradient {
+        background-image: linear-gradient(90deg,
+        hsl(44deg 99% 62%) 0%,
+        hsl(41deg 100% 61%) 18%,
+        hsl(39deg 100% 60%) 26%,
+        hsl(36deg 100% 59%) 33%,
+        hsl(34deg 100% 58%) 39%,
+        hsl(31deg 100% 58%) 44%,
+        hsl(28deg 100% 58%) 50%,
+        hsl(24deg 100% 59%) 56%,
+        hsl(20deg 100% 59%) 61%,
+        hsl(16deg 100% 60%) 67%,
+        hsl(11deg 100% 61%) 74%,
+        hsl(6deg 100% 61%) 82%,
+        hsl(0deg 99% 62%) 100%);
+    }
+    
+    @keyframes spinner-fade {
+        0%, 100% { opacity: 0.15; }
+        50%       { opacity: 1; }
+    }
+    
+    @keyframes reveal-fade {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    @keyframes reveal-fade-2 {
+        from { opacity: 0; }
+        to { opacity: 0.2; }
+    }
+    
+    @keyframes skeleton {
+        from { background-position: 200% center; }
+        to { background-position: -200% center; }
+    }
+    
+    .skeleton {
+        background-image: linear-gradient(
+        90deg,
+        rgb(255 255 255 / 5%),
+        rgb(255 255 255 / 10%),
+        rgb(255 255 255 / 5%)
+        );
+        background-size: 200% 100%;
+        animation: 5s linear 0s infinite normal both running skeleton
+    }
+
+    @keyframes slideDown {
+        from {
+            height: 0;
+        }
+        to {
+            height: var(--reka-accordion-content-height);
+        }
+    }
+    
+    @keyframes slideUp {
+        from {
+            height: var(--reka-accordion-content-height);
+        }
+        to {
+            height: 0;
+        }
+    }
+
+    .animate-pop {
+        animation: pop 0.2s ease-out;
+    }
+    
+    @keyframes pop {
+        from {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+}
+
+@custom-variant stuck {
+    @container scroll-state(stuck: top) {
+        @slot;
+    }
+}

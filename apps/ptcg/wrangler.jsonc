@@ -1,0 +1,17 @@
+{
+    "$schema": "node_modules/wrangler/config-schema.json",
+
+    // Worker names are unique per account, so each app needs its own.
+    "name": "cardcarp-ptcg",
+    "compatibility_date": "2025-01-01",
+
+    "assets": {
+        "directory": "./dist",
+        // Serves index.html for client routes like /deckbox on a hard refresh.
+        "not_found_handling": "single-page-application"
+    },
+
+    "routes": [
+        { "pattern": "ptcg.cardcarp.com", "custom_domain": true }
+    ]
+}

@@ -1,0 +1,32 @@
+{
+    "wow": {
+        "name": "World of Warcraft",
+        "detail": "Complete (2006 - 2013)",
+        "icon": "https://storage.cardcarp.com/game/wow/asset/icon.avif",
+        "thumb": "https://storage.cardcarp.com/game/wow/asset/preview.avif",
+        "category": [
+            "Warcraft"
+        ],
+        "tag": [
+            "TCG",
+            "Mature",
+            "Fantasy"
+        ],
+        "site": "https://wow.cardcarp.com"
+    },
+    "ptcg": {
+        "name": "Pokémon Trading Card Game",
+        "detail": "Latest Update: Choas Rising",
+        "icon": "https://storage.cardcarp.com/game/ptcg/asset/icon.avif",
+        "thumb": "https://storage.cardcarp.com/game/ptcg/asset/preview.avif",
+        "category": [
+            "Pokémon"
+        ],
+        "tag": [
+            "TCG",
+            "Kodomo",
+            "Creature Collector"
+        ],
+        "site": "https://ptcg.cardcarp.com"
+    }
+}

@@ -1,0 +1,56 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write        # required for trusted publishing (OIDC)
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # The runner's bundled npm may predate OIDC trusted publishing (needs >= 11.5.1).
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+
+      - run: npm test
+
+      # Publish only versions that are not already on the registry, so a release
+      # that bumps one package does not fail on the two that did not change.
+      - name: Publish changed packages
+        run: |
+          set -euo pipefail
+          published=0
+          for dir in packages/*/; do
+            name=$(node -p "require('./${dir}package.json').name")
+            version=$(node -p "require('./${dir}package.json').version")
+            private=$(node -p "require('./${dir}package.json').private === true")
+
+            if [ "$private" = "true" ]; then
+              echo "skip    $name (private)"
+              continue
+            fi
+
+            if npm view "$name@$version" version >/dev/null 2>&1; then
+              echo "skip    $name@$version (already published)"
+              continue
+            fi
+
+            echo "publish $name@$version"
+            npm publish --workspace "$name" --provenance
+            published=$((published + 1))
+          done
+          echo "published $published package(s)"

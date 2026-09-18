@@ -1,0 +1,43 @@
+{
+    "name": "@cardcarp/core",
+    "version": "0.1.0",
+    "description": "What a deckbox and a table both need: the game store, the shared UI state, and the card-shaped helpers neither owns.",
+    "keywords": [
+        "cardcarp",
+        "card-game",
+        "tcg",
+        "vue",
+        "game-config"
+    ],
+    "license": "MIT-0",
+    "author": "CardCarp",
+    "homepage": "https://cardcarp.com",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/cardcarp/cardcarp.git",
+        "directory": "packages/core"
+    },
+    "bugs": "https://github.com/cardcarp/cardcarp/issues",
+    "type": "module",
+    "exports": {
+        "./*": "./src/*"
+    },
+    "files": [
+        "src",
+        "!src/**/*.test.mjs"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "publishConfig": {
+        "access": "public"
+    },
+    "peerDependencies": {
+        "vue": "^3.5.41"
+    },
+    "dependencies": {
+        "@vueuse/core": "^14.4.0",
+        "lodash": "^4.18.1",
+        "motion-v": "^2.4.0"
+    }
+}

@@ -1,0 +1,24 @@
+{
+    "name": "@cardcarp/ptcg",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "description": "Pokémon TCG site: the template with ptcg's config and storage.",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "deploy": "npm run build && wrangler deploy"
+    },
+    "dependencies": {
+        "@cardcarp/template": "*"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "^4.3.3",
+        "@vitejs/plugin-vue": "^6.0.8",
+        "pug": "^3.0.4",
+        "tailwindcss": "^4.3.3",
+        "vite": "^8.2.2",
+        "wrangler": "^4.15.2"
+    }
+}
